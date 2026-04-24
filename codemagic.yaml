@@ -1,0 +1,66 @@
+workflows:
+  dangdang-share-ios:
+    name: DangDangShare iOS Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        BUNDLE_ID: "com.dangdang.share"
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Build unsigned IPA
+        script: |
+          #!/bin/sh
+          set -e
+          cd $CM_BUILD_DIR
+          
+          PROJECT_FILE=$(find . -name "*.xcodeproj" -type d | head -1)
+          if [ -z "$PROJECT_FILE" ]; then
+            echo "[ERROR] No Xcode project found"
+            exit 1
+          fi
+          SCHEME_NAME=$(basename "$PROJECT_FILE" .xcodeproj)
+          echo "[INFO] Using project: $PROJECT_FILE, scheme: $SCHEME_NAME"
+          
+          echo "[INFO] Building unsigned archive..."
+          mkdir -p build/ios
+          
+          xcodebuild -project "$PROJECT_FILE" \
+            -scheme "$SCHEME_NAME" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$CM_BUILD_DIR/build/ios/archive/DangDangShare.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            ENABLE_BITCODE=NO \
+            archive
+          
+          echo "[INFO] Creating unsigned IPA from archive..."
+          APP_PATH=$(find "$CM_BUILD_DIR/build/ios/archive/DangDangShare.xcarchive/Products/Applications" -name "*.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "[ERROR] No .app found in archive"
+            exit 1
+          fi
+          echo "[INFO] Found app: $APP_PATH"
+          
+          IPA_DIR="$CM_BUILD_DIR/build/ios/ipa/Payload"
+          mkdir -p "$IPA_DIR"
+          cp -r "$APP_PATH" "$IPA_DIR/"
+          
+          cd "$CM_BUILD_DIR/build/ios/ipa"
+          zip -r "$CM_BUILD_DIR/build/ios/DangDangShare.ipa" Payload
+          
+          echo "[BUILD COMPLETE]"
+          ls -la "$CM_BUILD_DIR/build/ios/DangDangShare.ipa"
+    artifacts:
+      - build/ios/DangDangShare.ipa
+      - build/ios/archive/*.xcarchive
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true
