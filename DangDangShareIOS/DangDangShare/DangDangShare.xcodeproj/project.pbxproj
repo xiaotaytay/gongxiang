@@ -1,0 +1,446 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A100010123 /* DangDangShareApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010123 /* DangDangShareApp.swift */; };
+		A100010124 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010124 /* AppDelegate.swift */; };
+		A100010125 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010125 /* SceneDelegate.swift */; };
+		A100010126 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010126 /* AppState.swift */; };
+		A100010127 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010127 /* MainView.swift */; };
+		A100010128 /* ProtocolConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010128 /* ProtocolConstants.swift */; };
+		A100010129 /* BinaryFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010129 /* BinaryFrame.swift */; };
+		A100010130 /* RadarWebSocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010130 /* RadarWebSocketClient.swift */; };
+		A100010131 /* HeroData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010131 /* HeroData.swift */; };
+		A100010132 /* MonsterData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010132 /* MonsterData.swift */; };
+		A100010133 /* RadarOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010133 /* RadarOverlayView.swift */; };
+		A100010134 /* OverlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010134 /* OverlayManager.swift */; };
+		A100010135 /* FloatingButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010135 /* FloatingButtonView.swift */; };
+		A100010136 /* SettingsPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010136 /* SettingsPanelView.swift */; };
+		A100010138 /* PiPManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200010138 /* PiPManager.swift */; };
+		A100010139 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200010139 /* Assets.xcassets */; };
+		A100010141 /* map.png in Resources */ = {isa = PBXBuildFile; fileRef = A200010141 /* map.png */; };
+		A100010142 /* 111.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A200010142 /* 111.jpg */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A300010100 /* DangDangShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DangDangShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A200010123 /* DangDangShareApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangDangShareApp.swift; sourceTree = "<group>"; };
+		A200010124 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A200010125 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		A200010126 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		A200010127 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		A200010128 /* ProtocolConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolConstants.swift; sourceTree = "<group>"; };
+		A200010129 /* BinaryFrame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryFrame.swift; sourceTree = "<group>"; };
+		A200010130 /* RadarWebSocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarWebSocketClient.swift; sourceTree = "<group>"; };
+		A200010131 /* HeroData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeroData.swift; sourceTree = "<group>"; };
+		A200010132 /* MonsterData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonsterData.swift; sourceTree = "<group>"; };
+		A200010133 /* RadarOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarOverlayView.swift; sourceTree = "<group>"; };
+		A200010134 /* OverlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayManager.swift; sourceTree = "<group>"; };
+		A200010135 /* FloatingButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingButtonView.swift; sourceTree = "<group>"; };
+		A200010136 /* SettingsPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanelView.swift; sourceTree = "<group>"; };
+		A200010138 /* PiPManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiPManager.swift; sourceTree = "<group>"; };
+		A200010139 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A200010140 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A200010141 /* map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map.png; sourceTree = "<group>"; };
+		A200010142 /* 111.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "111.jpg"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A400010100 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A500010100 = {
+			isa = PBXGroup;
+			children = (
+				A500010200 /* DangDangShare */,
+				A500010300 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A500010300 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A300010100 /* DangDangShare.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A500010200 /* DangDangShare */ = {
+			isa = PBXGroup;
+			children = (
+				A500010400 /* App */,
+				A500010500 /* View */,
+				A500010600 /* Protocol */,
+				A500010700 /* Network */,
+				A500010800 /* Model */,
+				A500010900 /* Overlay */,
+				A200010139 /* Assets.xcassets */,
+				A200010140 /* Info.plist */,
+				A200010141 /* map.png */,
+				A200010142 /* 111.jpg */,
+			);
+			path = DangDangShare;
+			sourceTree = "<group>";
+		};
+		A500010400 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A200010123 /* DangDangShareApp.swift */,
+				A200010124 /* AppDelegate.swift */,
+				A200010125 /* SceneDelegate.swift */,
+				A200010126 /* AppState.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A500010500 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				A200010127 /* MainView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		A500010600 /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				A200010128 /* ProtocolConstants.swift */,
+				A200010129 /* BinaryFrame.swift */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
+		A500010700 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				A200010130 /* RadarWebSocketClient.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		A500010800 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A200010131 /* HeroData.swift */,
+				A200010132 /* MonsterData.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		A500010900 /* Overlay */ = {
+			isa = PBXGroup;
+			children = (
+				A200010133 /* RadarOverlayView.swift */,
+				A200010134 /* OverlayManager.swift */,
+				A200010135 /* FloatingButtonView.swift */,
+				A200010136 /* SettingsPanelView.swift */,
+				A200010138 /* PiPManager.swift */,
+			);
+			path = Overlay;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A600010100 /* DangDangShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A800010300 /* Build configuration list for PBXNativeTarget "DangDangShare" */;
+			buildPhases = (
+				A700010100 /* Sources */,
+				A400010100 /* Frameworks */,
+				A700010200 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DangDangShare;
+			productName = DangDangShare;
+			productReference = A300010100 /* DangDangShare.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A900010100 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A600010100 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A800010100 /* Build configuration list for PBXProject "DangDangShare" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				"zh-Hans",
+			);
+			mainGroup = A500010100;
+			productRefGroup = A500010300 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A600010100 /* DangDangShare */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A700010200 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A100010139 /* Assets.xcassets in Resources */,
+				A100010141 /* map.png in Resources */,
+				A100010142 /* 111.jpg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A700010100 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A100010123 /* DangDangShareApp.swift in Sources */,
+				A100010124 /* AppDelegate.swift in Sources */,
+				A100010125 /* SceneDelegate.swift in Sources */,
+				A100010126 /* AppState.swift in Sources */,
+				A100010127 /* MainView.swift in Sources */,
+				A100010128 /* ProtocolConstants.swift in Sources */,
+				A100010129 /* BinaryFrame.swift in Sources */,
+				A100010130 /* RadarWebSocketClient.swift in Sources */,
+				A100010131 /* HeroData.swift in Sources */,
+				A100010132 /* MonsterData.swift in Sources */,
+				A100010133 /* RadarOverlayView.swift in Sources */,
+				A100010134 /* OverlayManager.swift in Sources */,
+				A100010135 /* FloatingButtonView.swift in Sources */,
+				A100010136 /* SettingsPanelView.swift in Sources */,
+				A100010138 /* PiPManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B100010100 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B100010200 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B200010100 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DangDangShare/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dangdang.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B200010200 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DangDangShare/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dangdang.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A800010100 /* Build configuration list for PBXProject "DangDangShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B100010100 /* Debug */,
+				B100010200 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A800010300 /* Build configuration list for PBXNativeTarget "DangDangShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B200010100 /* Debug */,
+				B200010200 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = A900010100 /* Project object */;
+}
