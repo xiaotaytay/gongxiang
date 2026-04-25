@@ -1,4 +1,5 @@
 import AVFoundation
+import AVKit
 import UIKit
 
 @MainActor
@@ -165,12 +166,12 @@ class PiPManager: NSObject {
     
     @objc private func renderFrame() {
         guard let pool = pixelBufferPool, let layer = displayLayer else { return }
+        if layer.status == .failed { layer.flush(); sendInitialFrame(); return }
         var pb: CVPixelBuffer?
         CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &pb)
         guard let buf = pb else { return }
         renderRadarToBuffer(buf)
         guard let sb = createSampleBuffer(from: buf) else { return }
-        if !layer.statusErrors.isEmpty { layer.flush(); sendInitialFrame(); return }
         layer.enqueue(sb)
     }
     
@@ -223,10 +224,6 @@ class PiPManager: NSObject {
             let size = 40.0 * scaleX
             let drawX = CGFloat(hero.x) * scaleX
             let drawY = CGFloat(hero.y) * scaleY
-            let halfSize = size / 2
-            let cx = drawX + halfSize
-            let cy = drawY + halfSize
-            let radius = halfSize - 2
             
             let borderColor = hero.team == 1
                 ? UIColor(red: 0.15, green: 0.55, blue: 0.95, alpha: 1)
