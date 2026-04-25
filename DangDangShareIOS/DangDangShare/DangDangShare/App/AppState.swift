@@ -88,7 +88,9 @@ class AppState: ObservableObject {
         withAnimation { showToast = true }
         toastTimer?.invalidate()
         toastTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
-            withAnimation { self?.showToast = false }
+            Task { @MainActor in
+                withAnimation { self?.showToast = false }
+            }
         }
     }
 }
