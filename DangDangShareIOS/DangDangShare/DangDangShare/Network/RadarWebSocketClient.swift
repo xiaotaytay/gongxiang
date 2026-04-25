@@ -218,7 +218,7 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     }
     
     private func handleDeltaData(_ deltas: [DeltaEntity]) {
-        guard !heroStateMap.isEmpty, let current = currentGameData else { return }
+        guard !heroStateMap.isEmpty, let _ = currentGameData else { return }
         for delta in deltas {
             guard var hero = heroStateMap[delta.id] else { continue }
             hero.x += Float(delta.dx) / 10.0
