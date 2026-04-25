@@ -148,22 +148,23 @@ class RadarOverlayView: UIView {
             ctx.strokePath()
             
             let smallR = CGFloat(max(3, 6 * heroScale / safeDivScale()))
-            let greenCx = drawX + Float(smallR) + 1
-            let greenCy = drawY + size - Float(smallR) - 1
+            let smallRF = Float(smallR)
+            let greenCx = drawX + smallRF + 1
+            let greenCy = drawY + size - smallRF - 1
             ctx.setFillColor(UIColor.white.cgColor)
-            ctx.addEllipse(in: CGRect(x: CGFloat(greenCx - smallR - 1), y: CGFloat(greenCy - smallR - 1), width: (smallR + 1) * 2, height: (smallR + 1) * 2))
+            ctx.addEllipse(in: CGRect(x: CGFloat(greenCx - smallRF - 1), y: CGFloat(greenCy - smallRF - 1), width: (smallR + 1) * 2, height: (smallR + 1) * 2))
             ctx.fillPath()
             ctx.setFillColor(UIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: 1).cgColor)
-            ctx.addEllipse(in: CGRect(x: CGFloat(greenCx - smallR), y: CGFloat(greenCy - smallR), width: smallR * 2, height: smallR * 2))
+            ctx.addEllipse(in: CGRect(x: CGFloat(greenCx - smallRF), y: CGFloat(greenCy - smallRF), width: smallR * 2, height: smallR * 2))
             ctx.fillPath()
             
-            let yellowCx = drawX + size - Float(smallR) - 1
-            let yellowCy = drawY + size - Float(smallR) - 1
+            let yellowCx = drawX + size - smallRF - 1
+            let yellowCy = drawY + size - smallRF - 1
             ctx.setFillColor(UIColor.white.cgColor)
-            ctx.addEllipse(in: CGRect(x: CGFloat(yellowCx - smallR - 1), y: CGFloat(yellowCy - smallR - 1), width: (smallR + 1) * 2, height: (smallR + 1) * 2))
+            ctx.addEllipse(in: CGRect(x: CGFloat(yellowCx - smallRF - 1), y: CGFloat(yellowCy - smallRF - 1), width: (smallR + 1) * 2, height: (smallR + 1) * 2))
             ctx.fillPath()
             ctx.setFillColor(UIColor(red: 1, green: 0.72, blue: 0, alpha: 1).cgColor)
-            ctx.addEllipse(in: CGRect(x: CGFloat(yellowCx - smallR), y: CGFloat(yellowCy - smallR), width: smallR * 2, height: smallR * 2))
+            ctx.addEllipse(in: CGRect(x: CGFloat(yellowCx - smallRF), y: CGFloat(yellowCy - smallRF), width: smallR * 2, height: smallR * 2))
             ctx.fillPath()
             
             if hero.level > 0 {
@@ -308,7 +309,7 @@ class RadarOverlayView: UIView {
         Task { [weak self] in
             guard let self = self else { return }
             defer {
-                self.cacheQueue.sync(flags: .barrier) {
+                _ = self.cacheQueue.sync(flags: .barrier) {
                     self.loadingSet.remove(heroId)
                 }
             }
