@@ -13,6 +13,7 @@ class OverlayManager {
     
     private init() {}
     
+    @MainActor
     func showOverlay() {
         guard overlayWindow == nil else { return }
         
@@ -50,6 +51,7 @@ class OverlayManager {
         PiPManager.shared.setup()
     }
     
+    @MainActor
     func hideOverlay() {
         radarView?.removeFromSuperview()
         floatingButton?.removeFromSuperview()
@@ -66,6 +68,7 @@ class OverlayManager {
         PiPManager.shared.stopPiP()
     }
     
+    @MainActor
     func updateGameData(_ data: String) {
         radarView?.gameDataString = data
         radarView?.setNeedsDisplay()
