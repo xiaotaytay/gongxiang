@@ -201,9 +201,11 @@ class SettingsPanelView: UIView {
     }
     
     @objc private func lockTapped(_ btn: UIButton) {
-        let locked = !PiPManager.shared.getLocked()
-        PiPManager.shared.setLocked(locked)
-        btn.setTitle(locked ? "🔓 解锁画中画窗口" : "🔒 锁定画中画窗口", for: .normal)
+        Task { @MainActor in
+            let locked = !PiPManager.shared.getLocked()
+            PiPManager.shared.setLocked(locked)
+            btn.setTitle(locked ? "🔓 解锁画中画窗口" : "🔒 锁定画中画窗口", for: .normal)
+        }
     }
     
     override func sizeToFit() {
