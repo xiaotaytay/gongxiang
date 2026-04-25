@@ -122,9 +122,6 @@ class RadarOverlayView: UIView {
             let drawX = heroX(hero.x)
             let drawY = heroY(hero.y)
             let halfSize = size / 2
-            let cx = drawX + halfSize
-            let cy = drawY + halfSize
-            let radius = halfSize - 1
             
             if let image = getHeroImage(String(hero.id)) {
                 let imageRect = CGRect(x: CGFloat(drawX), y: CGFloat(drawY), width: CGFloat(size), height: CGFloat(size))
@@ -326,7 +323,7 @@ class RadarOverlayView: UIView {
                 image.draw(in: CGRect(origin: .zero, size: targetSize))
             }
             
-            self.cacheQueue.sync(flags: .barrier) {
+            _ = self.cacheQueue.sync(flags: .barrier) {
                 if self.heroImageCache.count >= self.maxCacheSize {
                     if let firstKey = self.heroImageCache.keys.first {
                         self.heroImageCache.removeValue(forKey: firstKey)
