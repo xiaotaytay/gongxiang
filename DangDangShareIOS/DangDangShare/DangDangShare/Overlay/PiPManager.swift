@@ -124,12 +124,17 @@ class PiPManager: NSObject {
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleDecodeError(_:)), name: AVSampleBufferDisplayLayer.failedToDecodeNotification, object: displayLayer)
     }
     
     @objc private func appDidEnterBackground() {
         if radarView != nil, !lastGameData.isEmpty { startPiP() }
     }
     @objc private func appWillEnterForeground() { stopPiP() }
+    @objc private func handleDecodeError(_ n: Notification) {
+        displayLayer?.flush()
+        sendInitialFrame()
+    }
     
     func updateRadarView(_ v: RadarOverlayView?) { radarView = v }
     func updateGameData(_ d: String) { lastGameData = d }
@@ -354,14 +359,19 @@ extension PiPManager: AVPictureInPictureControllerDelegate {
     nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, failedToStartPictureInPictureWithError e: Error) {
         Task { @MainActor in isPiPActive = false }
     }
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureWithCompletionHandler h: @escaping (Bool) -> Void) {
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler h: @escaping @Sendable (Bool) -> Void) {
         h(true)
     }
 }
 
-extension PiPManager: AVSampleBufferDisplayLayerPlaybackDelegate {
-    nonisolated func sampleBufferDisplayLayer(_ l: AVSampleBufferDisplayLayer, didChange s: AVQueuedSampleBufferRenderingStatus) {}
-    nonisolated func sampleBufferDisplayLayer(_ l: AVSampleBufferDisplayLayer, didFailToDecode e: Error) {
-        Task { @MainActor in l.flush(); sendInitialFrame() }
+extension PiPManager: AVPictureInPictureSampleBufferPlaybackDelegate {
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, setPlaying playing: Bool) {
     }
+    
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, timeRangeForPlayback: CMTimeRange) -> CMTimeRange {
+        return CMTimeRange(start: .zero, duration: CMTime(value: 1, timescale: 1))
+    }
+}
+
+extension PiPManager: AVSampleBufferDisplayLayerDelegate {
 }
