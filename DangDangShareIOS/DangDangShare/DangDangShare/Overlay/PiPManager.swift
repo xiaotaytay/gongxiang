@@ -109,7 +109,9 @@ class PiPManager: NSObject {
         displayLayer = AVSampleBufferDisplayLayer()
         displayLayer?.frame = CGRect(origin: .zero, size: pipSize)
         displayLayer?.videoGravity = .resizeAspect
-        displayLayer?.preventsCapture = false
+        if #available(iOS 17.0, *) {
+            displayLayer?.preventsCapture = false
+        }
     }
     
     private func setupPiPController() {
@@ -124,17 +126,12 @@ class PiPManager: NSObject {
     private func setupAppLifecycleObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleDecodeError(_:)), name: AVSampleBufferDisplayLayer.failedToDecodeNotification, object: displayLayer)
     }
     
     @objc private func appDidEnterBackground() {
         if radarView != nil, !lastGameData.isEmpty { startPiP() }
     }
     @objc private func appWillEnterForeground() { stopPiP() }
-    @objc private func handleDecodeError(_ n: Notification) {
-        displayLayer?.flush()
-        sendInitialFrame()
-    }
     
     func updateRadarView(_ v: RadarOverlayView?) { radarView = v }
     func updateGameData(_ d: String) { lastGameData = d }
@@ -261,7 +258,7 @@ class PiPManager: NSObject {
             
             let hpY = drawY + size
             let maxHPWidth = size
-            let hpWidth = CGFloat(Float(hero.hp) / 100.0) * maxHPWidth
+            let hpWidth = CGFloat(hero.hp) / 100.0 * maxHPWidth
             let strokeW = max(1.5, 3 * scaleX)
             ctx.setStrokeColor(UIColor.white.withAlphaComponent(0.6).cgColor)
             ctx.setLineWidth(strokeW)
@@ -365,13 +362,22 @@ extension PiPManager: AVPictureInPictureControllerDelegate {
 }
 
 extension PiPManager: AVPictureInPictureSampleBufferPlaybackDelegate {
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, setPlaying playing: Bool) {
-    }
-    
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, timeRangeForPlayback: CMTimeRange) -> CMTimeRange {
+    nonisolated func pictureInPictureControllerTimeRangeForPlayback(_ c: AVPictureInPictureController) -> CMTimeRange {
         return CMTimeRange(start: .zero, duration: CMTime(value: 1, timescale: 1))
     }
-}
-
-extension PiPManager: AVSampleBufferDisplayLayerDelegate {
+    
+    nonisolated func pictureInPictureControllerIsPlaybackPaused(_ c: AVPictureInPictureController) -> Bool {
+        return false
+    }
+    
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, didTransitionToRenderSize newRenderSize: CMVideoDimensions) {
+    }
+    
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, skipByInterval skipInterval: CMTime, completion completionHandler: @escaping @Sendable () -> Void) {
+        completionHandler()
+    }
+    
+    @available(iOS 17.0, *)
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, skipByInterval skipInterval: CMTime) async {
+    }
 }
