@@ -40,7 +40,9 @@ class OverlayManager {
         
         let floating = FloatingButtonView()
         floating.onTap = { [weak self] in
-            self?.toggleSettings()
+            Task { @MainActor in
+                self?.toggleSettings()
+            }
         }
         container.addSubview(floating)
         floatingButton = floating
@@ -75,6 +77,7 @@ class OverlayManager {
         PiPManager.shared.updateGameData(data)
     }
     
+    @MainActor
     func toggleSettings() {
         if settingsVisible {
             settingsPanel?.removeFromSuperview()
@@ -85,6 +88,7 @@ class OverlayManager {
         }
     }
     
+    @MainActor
     private func showSettings() {
         guard let container = touchPassthroughWindow?.rootViewController?.view,
               let btn = floatingButton else { return }
