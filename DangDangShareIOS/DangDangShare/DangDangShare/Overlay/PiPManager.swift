@@ -117,8 +117,7 @@ class PiPManager: NSObject {
     private func setupPiPController() {
         guard let dl = displayLayer else { return }
         guard AVPictureInPictureController.isPictureInPictureSupported() else { return }
-        let cs = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: dl, playbackDelegate: self)
-        pipController = AVPictureInPictureController(contentSource: cs)
+        pipController = AVPictureInPictureController(layer: dl)
         pipController?.delegate = self
         pipController?.canStartPictureInPictureAutomaticallyFromInline = true
     }
@@ -358,25 +357,5 @@ extension PiPManager: AVPictureInPictureControllerDelegate {
     }
     nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler h: @escaping @Sendable (Bool) -> Void) {
         h(true)
-    }
-}
-
-extension PiPManager: AVPictureInPictureSampleBufferPlaybackDelegate {
-    nonisolated func pictureInPictureControllerTimeRangeForPlayback(_ c: AVPictureInPictureController) -> CMTimeRange {
-        return CMTimeRange(start: .zero, duration: CMTime(value: 1, timescale: 1))
-    }
-    
-    nonisolated func pictureInPictureControllerIsPlaybackPaused(_ c: AVPictureInPictureController) -> Bool {
-        return false
-    }
-    
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, didTransitionToRenderSize newRenderSize: CMVideoDimensions) {
-    }
-    
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, setPlaying playing: Bool) {
-    }
-    
-    @available(iOS 17.0, *)
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, skipByInterval skipInterval: CMTime) async {
     }
 }
