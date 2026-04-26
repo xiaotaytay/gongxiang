@@ -30,6 +30,7 @@ class PiPManager: NSObject {
         setupDisplayLayer()
         setupPiPController()
         setupAppLifecycleObservers()
+        startSilentAudio()
     }
     
     private func loadMapImage() {
@@ -129,9 +130,11 @@ class PiPManager: NSObject {
     }
     
     @objc private func appDidEnterBackground() {
-        if radarView != nil, !lastGameData.isEmpty { startPiP() }
+        if radarView != nil { startPiP() }
     }
-    @objc private func appWillEnterForeground() { stopPiP() }
+    @objc private func appWillEnterForeground() {
+        if isPiPActive { stopPiP() }
+    }
     
     func updateRadarView(_ v: RadarOverlayView?) { radarView = v }
     func updateGameData(_ d: String) { lastGameData = d }
