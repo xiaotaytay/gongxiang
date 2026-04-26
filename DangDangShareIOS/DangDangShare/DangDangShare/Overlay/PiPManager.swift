@@ -368,7 +368,7 @@ class PiPManager: NSObject {
         let r = CMSampleBufferCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pb, dataReady: true, makeDataReadyCallback: nil, refcon: nil, formatDescription: f, sampleTiming: &timing, sampleBufferOut: &sb)
         guard r == 0 else { return nil }
         if let sb = sb {
-            let attachments = CMSampleBufferGetSampleAttachmentsArray(sb, true)
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(sb, createIfNecessary: true)
             if let dict = CFArrayGetValueAtIndex(attachments, 0) {
                 let d = unsafeBitCast(dict, to: CFMutableDictionary.self)
                 CFDictionarySetValue(d, Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque(), Unmanaged.passUnretained(kCFBooleanTrue).toOpaque())
