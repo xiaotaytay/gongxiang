@@ -61,6 +61,9 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = ProtocolConstants.connectTimeout
         config.waitsForConnectivity = true
+        config.sessionSendsLaunchEvents = true
+        config.isDiscretionary = false
+        config.networkServiceType = .avStreaming
         urlSession = URLSession(configuration: config, delegate: self, delegateQueue: nil)
         webSocketTask = urlSession?.webSocketTask(with: url)
         webSocketTask?.resume()
