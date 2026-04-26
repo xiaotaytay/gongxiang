@@ -360,3 +360,22 @@ extension PiPManager: AVPictureInPictureControllerDelegate {
         h(true)
     }
 }
+
+extension PiPManager: AVPictureInPictureSampleBufferPlaybackDelegate {
+    nonisolated func pictureInPictureControllerTimeRangeForPlayback(_ c: AVPictureInPictureController) -> CMTimeRange {
+        return CMTimeRange(start: .zero, duration: CMTime(value: 1, timescale: 1))
+    }
+    
+    nonisolated func pictureInPictureControllerIsPlaybackPaused(_ c: AVPictureInPictureController) -> Bool {
+        return false
+    }
+    
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, didTransitionToRenderSize newRenderSize: CMVideoDimensions) {
+    }
+    
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, setPlaying playing: Bool) {
+    }
+    
+    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, skipByInterval skipInterval: CMTime) async {
+    }
+}
