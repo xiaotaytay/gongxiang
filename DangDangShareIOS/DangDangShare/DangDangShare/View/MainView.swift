@@ -38,6 +38,10 @@ struct MainView: View {
         .onAppear {
             serverIP = savedIP
             roomID = savedRoom
+            if !showOverlay {
+                showOverlay = true
+                OverlayManager.shared.showOverlay()
+            }
         }
     }
     
@@ -248,13 +252,6 @@ struct MainView: View {
             serverStatus = "已连接"
             statusColor = Color(hex: "30d158")
             appState.showToast("已连接到服务器")
-            
-            Task { @MainActor in
-                if !showOverlay {
-                    showOverlay = true
-                    OverlayManager.shared.showOverlay()
-                }
-            }
         }
         
         appState.onServerDisconnected = { reason in
