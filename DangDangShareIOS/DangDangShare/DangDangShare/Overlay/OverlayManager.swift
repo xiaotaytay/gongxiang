@@ -5,11 +5,6 @@ class OverlayManager {
     
     var overlayWindow: UIWindow?
     var radarView: RadarOverlayView?
-    var floatingButton: FloatingButtonView?
-    var settingsPanel: SettingsPanelView?
-    var settingsVisible = false
-    
-    private var touchPassthroughWindow: PassthroughWindow?
     private var isInBackground = false
     
     private init() {}
@@ -28,7 +23,7 @@ class OverlayManager {
         passthroughWindow.windowLevel = .statusBar + 1
         passthroughWindow.backgroundColor = .clear
         passthroughWindow.isHidden = false
-        self.touchPassthroughWindow = passthroughWindow
+        self.overlayWindow = passthroughWindow
         
         let container = PassthroughView(frame: ws.screen.bounds)
         container.backgroundColor = .clear
@@ -42,18 +37,6 @@ class OverlayManager {
         container.addSubview(radar)
         radarView = radar
         
-        let floating = FloatingButtonView()
-        floating.isUserInteractionEnabled = true
-        floating.onTap = { [weak self] in
-            Task { @MainActor in
-                self?.toggleSettings()
-            }
-        }
-        container.addSubview(floating)
-        floatingButton = floating
-        
-        overlayWindow = passthroughWindow
-        
         PiPManager.shared.updateRadarView(radar)
         PiPManager.shared.setup()
         PiPManager.shared.startPiP()
@@ -62,17 +45,10 @@ class OverlayManager {
     @MainActor
     func hideOverlay() {
         radarView?.removeFromSuperview()
-        floatingButton?.removeFromSuperview()
-        settingsPanel?.removeFromSuperview()
-        touchPassthroughWindow?.isHidden = true
-        touchPassthroughWindow = nil
+        overlayWindow?.isHidden = true
         overlayWindow = nil
         radarView = nil
-        floatingButton = nil
-        settingsPanel = nil
-        settingsVisible = false
         isInBackground = false
-        
         PiPManager.shared.updateRadarView(nil)
         PiPManager.shared.stopPiP()
     }
@@ -81,33 +57,17 @@ class OverlayManager {
     func enterBackground() {
         guard overlayWindow != nil else { return }
         isInBackground = true
-        
-        if let btn = floatingButton {
-            btn.removeFromSuperview()
-            PiPManager.shared.moveButtonToPiP(btn)
-        }
-        
         radarView?.isHidden = true
-        touchPassthroughWindow?.isHidden = true
+        overlayWindow?.isHidden = true
     }
     
     @MainActor
     func enterForeground() {
         guard overlayWindow != nil else { return }
         isInBackground = false
-        
-        PiPManager.shared.moveButtonFromPiP()
-        
-        if let btn = floatingButton {
-            btn.removeFromSuperview()
-            if let container = touchPassthroughWindow?.rootViewController?.view {
-                container.addSubview(btn)
-            }
-        }
-        
         radarView?.isHidden = false
-        touchPassthroughWindow?.isHidden = false
-        touchPassthroughWindow?.makeKey()
+        overlayWindow?.isHidden = false
+        overlayWindow?.makeKey()
     }
     
     @MainActor
@@ -115,53 +75,6 @@ class OverlayManager {
         radarView?.gameDataString = data
         radarView?.setNeedsDisplay()
         PiPManager.shared.updateGameData(data)
-    }
-    
-    @MainActor
-    func toggleSettings() {
-        if settingsVisible {
-            settingsPanel?.removeFromSuperview()
-            settingsPanel = nil
-            settingsVisible = false
-        } else {
-            showSettings()
-        }
-    }
-    
-    @MainActor
-    private func showSettings() {
-        guard let container = touchPassthroughWindow?.rootViewController?.view,
-              let btn = floatingButton else { return }
-        settingsVisible = true
-        
-        let panel = SettingsPanelView()
-        panel.onClose = { [weak self] in
-            self?.settingsPanel?.removeFromSuperview()
-            self?.settingsPanel = nil
-            self?.settingsVisible = false
-        }
-        panel.onSettingsChanged = { [weak self] globalX, globalY, hox, hoy, hs, mox, moy, ms, mz in
-            self?.radarView?.updateSettings(globalX: globalX, globalY: globalY,
-                                             heroOffsetX: hox, heroOffsetY: hoy, heroScale: hs,
-                                             monsterOffsetX: mox, monsterOffsetY: moy, monsterScale: ms, monsterZoom: mz)
-        }
-        
-        let btnFrame = btn.frame
-        let panelWidth: CGFloat = 260
-        let screenBounds = UIScreen.main.bounds
-        let panelX = min(btnFrame.maxX + 8, screenBounds.width - panelWidth - 8)
-        let panelY = max(btnFrame.minY, 40)
-        
-        panel.frame = CGRect(x: panelX, y: panelY, width: panelWidth, height: 0)
-        panel.sizeToFit()
-        
-        let maxY = screenBounds.height - 40
-        if panel.frame.maxY > maxY {
-            panel.frame.size.height = maxY - panelY
-        }
-        
-        container.addSubview(panel)
-        settingsPanel = panel
     }
 }
 
