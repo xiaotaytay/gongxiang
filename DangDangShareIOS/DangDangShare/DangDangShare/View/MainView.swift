@@ -11,7 +11,6 @@ struct MainView: View {
     @State private var roomList: [String] = []
     @State private var currentRoom: String = ""
     @State private var isConnecting: Bool = false
-    @State private var showOverlay: Bool = false
     
     @AppStorage("server_ip") private var savedIP: String = ""
     @AppStorage("room_id") private var savedRoom: String = ""
@@ -28,6 +27,7 @@ struct MainView: View {
                     serverSection
                     roomSection
                     roomListSection
+                    footerSection
                     Spacer(minLength: 40)
                 }
                 .padding(.horizontal, 20)
@@ -38,10 +38,6 @@ struct MainView: View {
         .onAppear {
             serverIP = savedIP
             roomID = savedRoom
-            if !showOverlay {
-                showOverlay = true
-                OverlayManager.shared.showOverlay()
-            }
         }
     }
     
@@ -58,6 +54,18 @@ struct MainView: View {
                 .foregroundColor(.white.opacity(0.4))
         }
         .padding(.bottom, 8)
+    }
+    
+    private var footerSection: some View {
+        VStack(spacing: 4) {
+            Text("作者：当当")
+                .font(.system(size: 12))
+                .foregroundColor(.white.opacity(0.5))
+            Text("作者QQ：519390463")
+                .font(.system(size: 12))
+                .foregroundColor(.white.opacity(0.5))
+        }
+        .padding(.top, 20)
     }
     
     private var serverSection: some View {
@@ -309,7 +317,6 @@ struct MainView: View {
         Task { @MainActor in
             OverlayManager.shared.hideOverlay()
         }
-        showOverlay = false
         appState.showToast("已断开服务器连接")
     }
     
@@ -345,6 +352,10 @@ struct MainView: View {
         currentRoom = room
         appState.joinRoom(room)
         appState.showToast("已连接到房间: \(room)")
+        
+        Task { @MainActor in
+            OverlayManager.shared.showOverlay()
+        }
     }
     
     private func disconnectRoom() {
@@ -354,6 +365,7 @@ struct MainView: View {
         appState.leaveRoom()
         Task { @MainActor in
             OverlayManager.shared.updateGameData("")
+            OverlayManager.shared.hideOverlay()
         }
         appState.showToast("已断开房间连接")
     }
