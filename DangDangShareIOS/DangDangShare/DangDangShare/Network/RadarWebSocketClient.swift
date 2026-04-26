@@ -28,6 +28,7 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     private var heartbeatTimer: Timer?
     private var roomRefreshTimer: Timer?
     private var reconnectTimer: Timer?
+    private var connectTimeoutTimer: Timer?
     private var lastHeartbeatTime: TimeInterval = 0
     
     private var currentGameData: String?
@@ -59,14 +60,19 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
         
         let url = URL(string: "ws://\(serverHost):\(serverPort)/ws2")!
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = ProtocolConstants.connectTimeout
-        config.waitsForConnectivity = true
-        config.sessionSendsLaunchEvents = true
-        config.isDiscretionary = false
-        config.networkServiceType = .avStreaming
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 30
+        config.waitsForConnectivity = false
         urlSession = URLSession(configuration: config, delegate: self, delegateQueue: nil)
         webSocketTask = urlSession?.webSocketTask(with: url)
         webSocketTask?.resume()
+        connectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                if self?.state == .connecting {
+                    self?.handleDisconnect("连接超时，请检查服务器地址和端口")
+                }
+            }
+        }
     }
     
     func disconnect() {
@@ -129,7 +135,7 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     
     private func stopHeartbeat() { heartbeatTimer?.invalidate(); heartbeatTimer = nil }
     private func stopRoomRefresh() { roomRefreshTimer?.invalidate(); roomRefreshTimer = nil }
-    private func stopTimers() { stopHeartbeat(); stopRoomRefresh(); reconnectTimer?.invalidate(); reconnectTimer = nil }
+    private func stopTimers() { stopHeartbeat(); stopRoomRefresh(); reconnectTimer?.invalidate(); reconnectTimer = nil; connectTimeoutTimer?.invalidate(); connectTimeoutTimer = nil }
     
     private func startRoomRefresh() {
         stopRoomRefresh()
@@ -143,6 +149,8 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     
     nonisolated func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         Task { @MainActor in
+            self.connectTimeoutTimer?.invalidate()
+            self.connectTimeoutTimer = nil
             self.state = .connected
             self.reconnectAttempts = 0
             self.onConnected?()
