@@ -10,6 +10,7 @@ class OverlayManager {
     var settingsVisible = false
     
     private var touchPassthroughWindow: PassthroughWindow?
+    private var isInBackground = false
     
     private init() {}
     
@@ -31,6 +32,7 @@ class OverlayManager {
         
         let container = PassthroughView(frame: ws.screen.bounds)
         container.backgroundColor = .clear
+        container.isUserInteractionEnabled = true
         passthroughWindow.rootViewController = PassthroughViewController()
         passthroughWindow.rootViewController?.view = container
         passthroughWindow.rootViewController?.view.backgroundColor = .clear
@@ -41,6 +43,7 @@ class OverlayManager {
         radarView = radar
         
         let floating = FloatingButtonView()
+        floating.isUserInteractionEnabled = true
         floating.onTap = { [weak self] in
             Task { @MainActor in
                 self?.toggleSettings()
@@ -53,6 +56,7 @@ class OverlayManager {
         
         PiPManager.shared.updateRadarView(radar)
         PiPManager.shared.setup()
+        PiPManager.shared.startPiP()
     }
     
     @MainActor
@@ -67,9 +71,43 @@ class OverlayManager {
         floatingButton = nil
         settingsPanel = nil
         settingsVisible = false
+        isInBackground = false
         
         PiPManager.shared.updateRadarView(nil)
         PiPManager.shared.stopPiP()
+    }
+    
+    @MainActor
+    func enterBackground() {
+        guard overlayWindow != nil else { return }
+        isInBackground = true
+        
+        if let btn = floatingButton {
+            btn.removeFromSuperview()
+            PiPManager.shared.moveButtonToPiP(btn)
+        }
+        
+        radarView?.isHidden = true
+        touchPassthroughWindow?.isHidden = true
+    }
+    
+    @MainActor
+    func enterForeground() {
+        guard overlayWindow != nil else { return }
+        isInBackground = false
+        
+        PiPManager.shared.moveButtonFromPiP()
+        
+        if let btn = floatingButton {
+            btn.removeFromSuperview()
+            if let container = touchPassthroughWindow?.rootViewController?.view {
+                container.addSubview(btn)
+            }
+        }
+        
+        radarView?.isHidden = false
+        touchPassthroughWindow?.isHidden = false
+        touchPassthroughWindow?.makeKey()
     }
     
     @MainActor
@@ -145,7 +183,7 @@ class PassthroughView: UIView {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         for subview in subviews.reversed() {
             let converted = convert(point, to: subview)
-            if subview.point(inside: converted, with: event), subview.isUserInteractionEnabled {
+            if subview.point(inside: converted, with: event) {
                 return subview.hitTest(converted, with: event)
             }
         }
