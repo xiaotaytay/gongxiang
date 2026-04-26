@@ -17,23 +17,25 @@ class OverlayManager {
     func showOverlay() {
         guard overlayWindow == nil else { return }
         
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene else { return }
+        let windowScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first
+        guard let ws = windowScene else { return }
         
-        let passthroughWindow = PassthroughWindow(windowScene: windowScene)
-        passthroughWindow.frame = UIScreen.main.bounds
+        let passthroughWindow = PassthroughWindow(windowScene: ws)
+        passthroughWindow.frame = ws.screen.bounds
         passthroughWindow.windowLevel = .statusBar + 1
         passthroughWindow.backgroundColor = .clear
         passthroughWindow.isHidden = false
         self.touchPassthroughWindow = passthroughWindow
         
-        let container = PassthroughView(frame: UIScreen.main.bounds)
+        let container = PassthroughView(frame: ws.screen.bounds)
         container.backgroundColor = .clear
         passthroughWindow.rootViewController = PassthroughViewController()
         passthroughWindow.rootViewController?.view = container
         passthroughWindow.rootViewController?.view.backgroundColor = .clear
         
-        let radar = RadarOverlayView(frame: UIScreen.main.bounds)
+        let radar = RadarOverlayView(frame: ws.screen.bounds)
         radar.isUserInteractionEnabled = false
         container.addSubview(radar)
         radarView = radar
