@@ -14,6 +14,8 @@ class PiPManager: NSObject {
     private var pipController: AVPictureInPictureController?
     private var pipCallViewController: AVPictureInPictureVideoCallViewController?
     private var pipDisplayView: PipDisplayView?
+    private var pipContentView: UIView?
+    private var floatingButtonRef: FloatingButtonView?
     private var pixelBufferPool: CVPixelBufferPool?
     private var displayLink: CADisplayLink?
     private var radarView: RadarOverlayView?
@@ -112,24 +114,30 @@ class PiPManager: NSObject {
     }
     
     private func setupPipDisplayView() {
-        let view = PipDisplayView(frame: CGRect(origin: .zero, size: pipSize))
-        view.backgroundColor = .black
-        view.sampleBufferLayer.videoGravity = .resizeAspect
+        let contentView = UIView(frame: CGRect(origin: .zero, size: pipSize))
+        contentView.backgroundColor = .black
+        self.pipContentView = contentView
+        
+        let displayView = PipDisplayView(frame: contentView.bounds)
+        displayView.backgroundColor = .clear
+        displayView.sampleBufferLayer.videoGravity = .resizeAspect
         if #available(iOS 17.0, *) {
-            view.sampleBufferLayer.preventsCapture = false
+            displayView.sampleBufferLayer.preventsCapture = false
         }
-        self.pipDisplayView = view
+        displayView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        contentView.addSubview(displayView)
+        self.pipDisplayView = displayView
     }
     
     private func setupPiPController() {
-        guard let dv = pipDisplayView else { return }
+        guard let cv = pipContentView else { return }
         guard AVPictureInPictureController.isPictureInPictureSupported() else { return }
         
         let callVC = AVPictureInPictureVideoCallViewController()
         callVC.preferredContentSize = pipSize
-        callVC.view.addSubview(dv)
-        dv.frame = callVC.view.bounds
-        dv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        callVC.view.addSubview(cv)
+        cv.frame = callVC.view.bounds
+        cv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.pipCallViewController = callVC
         
         guard let sourceView = radarView else { return }
@@ -180,6 +188,19 @@ class PiPManager: NSObject {
         displayLink?.invalidate(); displayLink = nil
         if isPiPActive { pipController?.stopPictureInPicture() }
         stopSilentAudio()
+    }
+    
+    func moveButtonToPiP(_ btn: FloatingButtonView) {
+        floatingButtonRef = btn
+        pipContentView?.addSubview(btn)
+        btn.frame.origin = CGPoint(x: 8, y: pipSize.height - 44)
+        btn.autoresizingMask = [.flexibleTopMargin]
+    }
+    
+    func moveButtonFromPiP() {
+        guard let btn = floatingButtonRef else { return }
+        btn.removeFromSuperview()
+        floatingButtonRef = nil
     }
     
     private func sendInitialFrame() {
