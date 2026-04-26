@@ -1,7 +1,7 @@
 workflows:
   dangdang-share-ios:
     name: DangDangShare iOS Build
-    max_build_duration: 120
+    max_build_duration: 180
     instance_type: mac_mini_m2
     environment:
       vars:
