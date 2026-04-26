@@ -304,8 +304,7 @@ class RadarOverlayView: UIView {
         
         Task<Void, Never> { [weak self] in
             guard let self = self else { return }
-            let removeFromLoading: () -> Void = { self.cacheQueue.sync(flags: .barrier) { self.loadingSet.remove(heroId) } }
-            defer { removeFromLoading() }
+            defer { _ = self.cacheQueue.sync(flags: .barrier) { self.loadingSet.remove(heroId) } }
             
             guard let url = URL(string: "\(self.heroImageURLBase)\(heroId)/\(heroId).jpg") else { return }
             
