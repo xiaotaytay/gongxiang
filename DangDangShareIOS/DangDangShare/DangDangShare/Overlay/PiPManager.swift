@@ -15,7 +15,6 @@ class PiPManager: NSObject {
     private var pipCallViewController: AVPictureInPictureVideoCallViewController?
     private var pipDisplayView: PipDisplayView?
     private var pipContentView: UIView?
-    private var floatingButtonRef: FloatingButtonView?
     private var pixelBufferPool: CVPixelBufferPool?
     private var displayLink: CADisplayLink?
     private var radarView: RadarOverlayView?
@@ -25,6 +24,13 @@ class PiPManager: NSObject {
     private var lastGameData: String = ""
     private var mapImage: UIImage?
     private var isLocked: Bool = false
+    
+    private let heroImageURLBase = "https://game.gtimg.cn/images/yxzj/img201606/heroimg/"
+    private var heroImageCache: [String: UIImage] = [:]
+    private var loadingSet: Set<String> = []
+    private let maxLoading = 5
+    private let maxCacheSize = 20
+    private let imageCacheQueue = DispatchQueue(label: "com.dangdangshare.pip.imagecache", attributes: .concurrent)
     
     private let originalMapSize: CGFloat = 340
     private var pipSize: CGSize = CGSize(width: 340, height: 340)
@@ -190,17 +196,7 @@ class PiPManager: NSObject {
         stopSilentAudio()
     }
     
-    func moveButtonToPiP(_ btn: FloatingButtonView) {
-        floatingButtonRef = btn
-        pipContentView?.addSubview(btn)
-        btn.frame.origin = CGPoint(x: 8, y: pipSize.height - 44)
-        btn.autoresizingMask = [.flexibleTopMargin]
-    }
-    
     func moveButtonFromPiP() {
-        guard let btn = floatingButtonRef else { return }
-        btn.removeFromSuperview()
-        floatingButtonRef = nil
     }
     
     private func sendInitialFrame() {
@@ -245,6 +241,13 @@ class PiPManager: NSObject {
         let h = CGFloat(CVPixelBufferGetHeight(buffer))
         ctx.clear(CGRect(x: 0, y: 0, width: w, height: h))
         
+        let scaleX = w / originalMapSize
+        let scaleY = h / originalMapSize
+        
+        ctx.saveGState()
+        ctx.translateBy(x: 0, y: h)
+        ctx.scaleBy(x: 1, y: -1)
+        
         if let mapImg = mapImage {
             ctx.interpolationQuality = .high
             mapImg.draw(in: CGRect(x: 0, y: 0, width: w, height: h))
@@ -252,9 +255,6 @@ class PiPManager: NSObject {
             ctx.setFillColor(UIColor(white: 0.05, alpha: 0.95).cgColor)
             ctx.fill(CGRect(x: 0, y: 0, width: w, height: h))
         }
-        
-        let scaleX = w / originalMapSize
-        let scaleY = h / originalMapSize
         
         if !lastGameData.isEmpty {
             let parts = lastGameData.components(separatedBy: "---")
@@ -265,6 +265,8 @@ class PiPManager: NSObject {
                 drawMonstersOnCtx(ctx, monsterPart: parts[1], scaleX: scaleX, scaleY: scaleY)
             }
         }
+        
+        ctx.restoreGState()
     }
     
     private func drawHeroesOnCtx(_ ctx: CGContext, heroPart: String, scaleX: CGFloat, scaleY: CGFloat, canvasW: CGFloat, canvasH: CGFloat) {
@@ -279,14 +281,44 @@ class PiPManager: NSObject {
                 ? UIColor(red: 0.15, green: 0.55, blue: 0.95, alpha: 1)
                 : UIColor.red
             
-            ctx.setFillColor(borderColor.withAlphaComponent(0.6).cgColor)
-            ctx.addEllipse(in: CGRect(x: drawX + 2, y: drawY + 2, width: size - 4, height: size - 4))
-            ctx.fillPath()
+            if let image = getHeroImage(String(hero.id)) {
+                let imageRect = CGRect(x: drawX, y: drawY, width: size, height: size)
+                ctx.saveGState()
+                ctx.addEllipse(in: imageRect.insetBy(dx: 1, dy: 1))
+                ctx.clip()
+                image.draw(in: imageRect)
+                ctx.restoreGState()
+            } else {
+                ctx.setFillColor(borderColor.withAlphaComponent(0.6).cgColor)
+                ctx.addEllipse(in: CGRect(x: drawX + 1, y: drawY + 1, width: size - 2, height: size - 2))
+                ctx.fillPath()
+                loadHeroImageAsync(String(hero.id))
+            }
             
             ctx.setStrokeColor(borderColor.cgColor)
             ctx.setLineWidth(max(1.5, 2.5 * scaleX))
             ctx.addEllipse(in: CGRect(x: drawX, y: drawY, width: size, height: size))
             ctx.strokePath()
+            
+            let smallR = max(3, 6 * scaleX)
+            let smallRF = Float(smallR)
+            let greenCx = Float(drawX) + smallRF + 1
+            let greenCy = Float(drawY) + Float(size) - smallRF - 1
+            ctx.setFillColor(UIColor.white.cgColor)
+            ctx.addEllipse(in: CGRect(x: CGFloat(greenCx - smallRF - 1), y: CGFloat(greenCy - smallRF - 1), width: (smallR + 1) * 2, height: (smallR + 1) * 2))
+            ctx.fillPath()
+            ctx.setFillColor(UIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: 1).cgColor)
+            ctx.addEllipse(in: CGRect(x: CGFloat(greenCx - smallRF), y: CGFloat(greenCy - smallRF), width: smallR * 2, height: smallR * 2))
+            ctx.fillPath()
+            
+            let yellowCx = Float(drawX) + Float(size) - smallRF - 1
+            let yellowCy = Float(drawY) + Float(size) - smallRF - 1
+            ctx.setFillColor(UIColor.white.cgColor)
+            ctx.addEllipse(in: CGRect(x: CGFloat(yellowCx - smallRF - 1), y: CGFloat(yellowCy - smallRF - 1), width: (smallR + 1) * 2, height: (smallR + 1) * 2))
+            ctx.fillPath()
+            ctx.setFillColor(UIColor(red: 1, green: 0.72, blue: 0, alpha: 1).cgColor)
+            ctx.addEllipse(in: CGRect(x: CGFloat(yellowCx - smallRF), y: CGFloat(yellowCy - smallRF), width: smallR * 2, height: smallR * 2))
+            ctx.fillPath()
             
             if hero.level > 0 {
                 let fontSize = max(6, 8 * scaleX)
@@ -375,6 +407,47 @@ class PiPManager: NSObject {
                 ctx.addRect(CGRect(x: bgX, y: bgY, width: textSize.width + padding * 2, height: textSize.height + padding * 2))
                 ctx.fillPath()
                 cdText.draw(at: CGPoint(x: drawX - textSize.width / 2, y: drawY - textSize.height / 2), withAttributes: attrs)
+            }
+        }
+    }
+    
+    private func getHeroImage(_ heroId: String) -> UIImage? {
+        return imageCacheQueue.sync { heroImageCache[heroId] }
+    }
+    
+    private func loadHeroImageAsync(_ heroId: String) {
+        let shouldLoad = imageCacheQueue.sync { () -> Bool in
+            if heroImageCache[heroId] != nil { return false }
+            if loadingSet.contains(heroId) { return false }
+            if loadingSet.count >= maxLoading { return false }
+            loadingSet.insert(heroId)
+            return true
+        }
+        guard shouldLoad else { return }
+        
+        Task { [weak self] in
+            guard let self = self else { return }
+            defer { _ = self.imageCacheQueue.sync(flags: .barrier) { self.loadingSet.remove(heroId) } }
+            
+            guard let url = URL(string: "\(self.heroImageURLBase)\(heroId)/\(heroId).jpg") else { return }
+            
+            let session = URLSession.shared
+            guard let data = try? await session.data(from: url).0,
+                  let image = UIImage(data: data) else { return }
+            
+            let targetSize = CGSize(width: 120, height: 120)
+            let renderer = UIGraphicsImageRenderer(size: targetSize)
+            let scaled = renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: targetSize))
+            }
+            
+            self.imageCacheQueue.sync(flags: .barrier) {
+                if self.heroImageCache.count >= self.maxCacheSize {
+                    if let firstKey = self.heroImageCache.keys.first {
+                        self.heroImageCache.removeValue(forKey: firstKey)
+                    }
+                }
+                self.heroImageCache[heroId] = scaled
             }
         }
     }
