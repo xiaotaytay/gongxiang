@@ -302,7 +302,7 @@ class RadarOverlayView: UIView {
         
         guard shouldLoad else { return }
         
-        Task { [weak self] in
+        Task<Void, Never> { [weak self] in
             guard let self = self else { return }
             let removeFromLoading: () -> Void = { self.cacheQueue.sync(flags: .barrier) { self.loadingSet.remove(heroId) } }
             defer { removeFromLoading() }
