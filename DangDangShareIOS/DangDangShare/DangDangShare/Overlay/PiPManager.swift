@@ -2,12 +2,18 @@ import AVFoundation
 import AVKit
 import UIKit
 
+class PipDisplayView: UIView {
+    override class var layerClass: AnyClass { AVSampleBufferDisplayLayer.self }
+    var sampleBufferLayer: AVSampleBufferDisplayLayer { layer as! AVSampleBufferDisplayLayer }
+}
+
 @MainActor
 class PiPManager: NSObject {
     static let shared = PiPManager()
     
     private var pipController: AVPictureInPictureController?
-    private var displayLayer: AVSampleBufferDisplayLayer?
+    private var pipCallViewController: AVPictureInPictureVideoCallViewController?
+    private var pipDisplayView: PipDisplayView?
     private var pixelBufferPool: CVPixelBufferPool?
     private var displayLink: CADisplayLink?
     private var radarView: RadarOverlayView?
@@ -27,10 +33,9 @@ class PiPManager: NSObject {
         loadMapImage()
         setupAudioSession()
         setupPixelBufferPool()
-        setupDisplayLayer()
+        setupPipDisplayView()
         setupPiPController()
         setupAppLifecycleObservers()
-        startSilentAudio()
     }
     
     private func loadMapImage() {
@@ -106,19 +111,32 @@ class PiPManager: NSObject {
         CVPixelBufferPoolCreate(kCFAllocatorDefault, pa as CFDictionary, ba as CFDictionary, &pixelBufferPool)
     }
     
-    private func setupDisplayLayer() {
-        displayLayer = AVSampleBufferDisplayLayer()
-        displayLayer?.frame = CGRect(origin: .zero, size: pipSize)
-        displayLayer?.videoGravity = .resizeAspect
+    private func setupPipDisplayView() {
+        let view = PipDisplayView(frame: CGRect(origin: .zero, size: pipSize))
+        view.backgroundColor = .black
+        view.sampleBufferLayer.videoGravity = .resizeAspect
         if #available(iOS 17.0, *) {
-            displayLayer?.preventsCapture = false
+            view.sampleBufferLayer.preventsCapture = false
         }
+        self.pipDisplayView = view
     }
     
     private func setupPiPController() {
-        guard let dl = displayLayer else { return }
+        guard let dv = pipDisplayView else { return }
         guard AVPictureInPictureController.isPictureInPictureSupported() else { return }
-        let cs = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: dl, playbackDelegate: self)
+        
+        let callVC = AVPictureInPictureVideoCallViewController()
+        callVC.preferredContentSize = pipSize
+        callVC.view.addSubview(dv)
+        dv.frame = callVC.view.bounds
+        dv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.pipCallViewController = callVC
+        
+        guard let sourceView = radarView else { return }
+        let cs = AVPictureInPictureController.ContentSource(
+            activeVideoCallSourceView: sourceView,
+            contentViewController: callVC
+        )
         pipController = AVPictureInPictureController(contentSource: cs)
         pipController?.delegate = self
         pipController?.canStartPictureInPictureAutomaticallyFromInline = true
@@ -136,7 +154,12 @@ class PiPManager: NSObject {
         if isPiPActive { stopPiP() }
     }
     
-    func updateRadarView(_ v: RadarOverlayView?) { radarView = v }
+    func updateRadarView(_ v: RadarOverlayView?) {
+        radarView = v
+        if v != nil && pipController == nil {
+            setupPiPController()
+        }
+    }
     func updateGameData(_ d: String) { lastGameData = d }
     func setLocked(_ locked: Bool) { isLocked = locked }
     func getLocked() -> Bool { return isLocked }
@@ -160,17 +183,18 @@ class PiPManager: NSObject {
     }
     
     private func sendInitialFrame() {
-        guard let pool = pixelBufferPool, let layer = displayLayer else { return }
+        guard let pool = pixelBufferPool, let layer = pipDisplayView?.sampleBufferLayer else { return }
         var pb: CVPixelBuffer?
         CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &pb)
         guard let buf = pb else { return }
         renderRadarToBuffer(buf)
         guard let sb = createSampleBuffer(from: buf) else { return }
+        if layer.status == .failed { layer.flush() }
         layer.enqueue(sb)
     }
     
     @objc private func renderFrame() {
-        guard let pool = pixelBufferPool, let layer = displayLayer else { return }
+        guard let pool = pixelBufferPool, let layer = pipDisplayView?.sampleBufferLayer else { return }
         if layer.status == .failed { layer.flush(); sendInitialFrame(); return }
         var pb: CVPixelBuffer?
         CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &pb)
@@ -343,6 +367,13 @@ class PiPManager: NSObject {
         var sb: CMSampleBuffer?
         let r = CMSampleBufferCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pb, dataReady: true, makeDataReadyCallback: nil, refcon: nil, formatDescription: f, sampleTiming: &timing, sampleBufferOut: &sb)
         guard r == 0 else { return nil }
+        if let sb = sb {
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(sb, true)
+            if let dict = CFArrayGetValueAtIndex(attachments, 0) {
+                let d = unsafeBitCast(dict, to: CFMutableDictionary.self)
+                CFDictionarySetValue(d, Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque(), Unmanaged.passUnretained(kCFBooleanTrue).toOpaque())
+            }
+        }
         return sb
     }
     
@@ -361,24 +392,5 @@ extension PiPManager: AVPictureInPictureControllerDelegate {
     }
     nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, restoreUserInterfaceForPictureInPictureStopWithCompletionHandler h: @escaping @Sendable (Bool) -> Void) {
         h(true)
-    }
-}
-
-extension PiPManager: AVPictureInPictureSampleBufferPlaybackDelegate {
-    nonisolated func pictureInPictureControllerTimeRangeForPlayback(_ c: AVPictureInPictureController) -> CMTimeRange {
-        return CMTimeRange(start: .zero, duration: CMTime(value: 1, timescale: 1))
-    }
-    
-    nonisolated func pictureInPictureControllerIsPlaybackPaused(_ c: AVPictureInPictureController) -> Bool {
-        return false
-    }
-    
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, didTransitionToRenderSize newRenderSize: CMVideoDimensions) {
-    }
-    
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, setPlaying playing: Bool) {
-    }
-    
-    nonisolated func pictureInPictureController(_ c: AVPictureInPictureController, skipByInterval skipInterval: CMTime) async {
     }
 }
