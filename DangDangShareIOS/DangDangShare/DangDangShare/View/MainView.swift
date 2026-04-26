@@ -249,9 +249,11 @@ struct MainView: View {
             statusColor = Color(hex: "30d158")
             appState.showToast("已连接到服务器")
             
-            if !showOverlay {
-                showOverlay = true
-                OverlayManager.shared.showOverlay()
+            Task { @MainActor in
+                if !showOverlay {
+                    showOverlay = true
+                    OverlayManager.shared.showOverlay()
+                }
             }
         }
         
@@ -282,7 +284,9 @@ struct MainView: View {
         }
         
         appState.onGameDataReceived = { data in
-            OverlayManager.shared.updateGameData(data)
+            Task { @MainActor in
+                OverlayManager.shared.updateGameData(data)
+            }
         }
         
         appState.onPingUpdate = { pingMs in
@@ -305,7 +309,9 @@ struct MainView: View {
         pingText = ""
         roomList = []
         currentRoom = ""
-        OverlayManager.shared.hideOverlay()
+        Task { @MainActor in
+            OverlayManager.shared.hideOverlay()
+        }
         showOverlay = false
         appState.showToast("已断开服务器连接")
     }
@@ -349,7 +355,9 @@ struct MainView: View {
         savedRoom = ""
         roomID = ""
         appState.leaveRoom()
-        OverlayManager.shared.updateGameData("")
+        Task { @MainActor in
+            OverlayManager.shared.updateGameData("")
+        }
         appState.showToast("已断开房间连接")
     }
     
