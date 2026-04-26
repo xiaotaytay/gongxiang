@@ -117,7 +117,8 @@ class PiPManager: NSObject {
     private func setupPiPController() {
         guard let dl = displayLayer else { return }
         guard AVPictureInPictureController.isPictureInPictureSupported() else { return }
-        pipController = AVPictureInPictureController(layer: dl)
+        let cs = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: dl, playbackDelegate: self)
+        pipController = AVPictureInPictureController(contentSource: cs)
         pipController?.delegate = self
         pipController?.canStartPictureInPictureAutomaticallyFromInline = true
     }
