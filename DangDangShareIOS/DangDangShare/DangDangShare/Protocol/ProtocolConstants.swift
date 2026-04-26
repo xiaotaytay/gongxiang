@@ -16,7 +16,7 @@ enum ProtocolConstants {
     static let flagIncremental: UInt8 = 0x01
     static let flagCompressed: UInt8 = 0x02
     
-    static let defaultWSPort = 8887
+    static let defaultWSPort = 8888
     static let heartbeatIntervalMs: TimeInterval = 5.0
     static let roomRefreshIntervalMs: TimeInterval = 5.0
     static let maxReconnectAttempts = 8
