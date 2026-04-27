@@ -26,6 +26,16 @@ class PiPManager: NSObject {
     private var mapImage: UIImage?
     private var isLocked: Bool = false
     
+    private var globalOffsetX: Float = 0
+    private var globalOffsetY: Float = 0
+    private var heroOffsetX: Float = 0
+    private var heroOffsetY: Float = 0
+    private var heroScale: Float = 1.0
+    private var monsterOffsetX: Float = 0
+    private var monsterOffsetY: Float = 0
+    private var monsterScale: Float = 1.0
+    private var monsterZoom: Float = 1.0
+    
     private let heroImageURLBase = "https://game.gtimg.cn/images/yxzj/img201606/heroimg/"
     private var heroImageCache: [String: UIImage] = [:]
     private var loadingSet: Set<String> = []
@@ -37,6 +47,20 @@ class PiPManager: NSObject {
     private var pipSize: CGSize = CGSize(width: 340, height: 340)
     
     override init() { super.init() }
+    
+    func updateSettings(globalX: Float, globalY: Float,
+                        heroOffsetX: Float, heroOffsetY: Float, heroScale: Float,
+                        monsterOffsetX: Float, monsterOffsetY: Float, monsterScale: Float, monsterZoom: Float) {
+        self.globalOffsetX = globalX
+        self.globalOffsetY = globalY
+        self.heroOffsetX = heroOffsetX
+        self.heroOffsetY = heroOffsetY
+        self.heroScale = heroScale
+        self.monsterOffsetX = monsterOffsetX
+        self.monsterOffsetY = monsterOffsetY
+        self.monsterScale = monsterScale
+        self.monsterZoom = monsterZoom
+    }
     
     func setup() {
         loadMapImage()
@@ -284,9 +308,12 @@ class PiPManager: NSObject {
         let heroStrings = heroPart.components(separatedBy: "==")
         for heroStr in heroStrings {
             guard let hero = HeroData.parse(heroStr) else { continue }
-            let size = 40.0 * scaleX
-            let drawX = CGFloat(hero.x) * scaleX
-            let drawY = CGFloat(hero.y) * scaleY
+            let baseSize: CGFloat = 40
+            let size = baseSize * scaleX * CGFloat(heroScale)
+            let baseDrawX = CGFloat(hero.x) * scaleX + CGFloat(globalOffsetX) + CGFloat(heroOffsetX)
+            let baseDrawY = CGFloat(hero.y) * scaleY + CGFloat(globalOffsetY) + CGFloat(heroOffsetY)
+            let drawX = baseDrawX - size / 2
+            let drawY = baseDrawY - size / 2
             
             let borderColor = hero.team == 1
                 ? UIColor(red: 0.15, green: 0.55, blue: 0.95, alpha: 1)
@@ -394,11 +421,14 @@ class PiPManager: NSObject {
                 if m.id == "166012" { hideCountdown = true }
             }
             
-            let drawX = CGFloat(m.x) * scaleX
-            let drawY = CGFloat(m.y) * scaleY
+            let baseDrawX = CGFloat(m.x) * scaleX + CGFloat(globalOffsetX) + CGFloat(monsterOffsetX)
+            let baseDrawY = CGFloat(m.y) * scaleY + CGFloat(globalOffsetY) + CGFloat(monsterOffsetY)
+            let drawX = baseDrawX
+            let drawY = baseDrawY
             
             if hideCountdown || m.isFullCD || m.cd == 0 {
-                let r = max(2.5, 3.5 * scaleX)
+                let baseR: CGFloat = 3.5
+                let r = baseR * scaleX * CGFloat(monsterScale) * CGFloat(monsterZoom)
                 ctx.setFillColor(monsterColor.cgColor)
                 ctx.addEllipse(in: CGRect(x: drawX - r, y: drawY - r, width: r * 2, height: r * 2))
                 ctx.fillPath()
