@@ -7,7 +7,38 @@ class OverlayManager {
     var radarView: RadarOverlayView?
     private var isInBackground = false
     
+    private var globalOffsetX: Float = 0
+    private var globalOffsetY: Float = 0
+    private var heroOffsetX: Float = 0
+    private var heroOffsetY: Float = 0
+    private var heroScale: Float = 1.0
+    private var monsterOffsetX: Float = 0
+    private var monsterOffsetY: Float = 0
+    private var monsterScale: Float = 1.0
+    private var monsterZoom: Float = 1.0
+    
     private init() {}
+    
+    @MainActor
+    func updateSettings(globalX: Float, globalY: Float,
+                        heroOffsetX: Float, heroOffsetY: Float, heroScale: Float,
+                        monsterOffsetX: Float, monsterOffsetY: Float, monsterScale: Float, monsterZoom: Float) {
+        self.globalOffsetX = globalX
+        self.globalOffsetY = globalY
+        self.heroOffsetX = heroOffsetX
+        self.heroOffsetY = heroOffsetY
+        self.heroScale = heroScale
+        self.monsterOffsetX = monsterOffsetX
+        self.monsterOffsetY = monsterOffsetY
+        self.monsterScale = monsterScale
+        self.monsterZoom = monsterZoom
+        
+        PiPManager.shared.updateSettings(
+            globalX: globalX, globalY: globalY,
+            heroOffsetX: heroOffsetX, heroOffsetY: heroOffsetY, heroScale: heroScale,
+            monsterOffsetX: monsterOffsetX, monsterOffsetY: monsterOffsetY, monsterScale: monsterScale, monsterZoom: monsterZoom
+        )
+    }
     
     @MainActor
     func showOverlay() {
