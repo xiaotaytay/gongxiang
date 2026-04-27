@@ -40,11 +40,12 @@ class OverlayManager {
         
         PiPManager.shared.updateRadarView(radar)
         PiPManager.shared.setup()
+        PiPManager.shared.startRendering()
     }
     
     @MainActor
     func hideOverlay() {
-        PiPManager.shared.stopPiP()
+        PiPManager.shared.stopRendering()
         radarView?.removeFromSuperview()
         overlayWindow?.isHidden = true
         overlayWindow = nil
