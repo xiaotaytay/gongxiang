@@ -271,6 +271,9 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
                             self.protocolType = .text
                             self.stopProtocolDetectTimer()
                             self.onConnected?()
+                            if let roomId = self.roomId, !roomId.isEmpty {
+                                self.subscribeToRoom()
+                            }
                         }
                         self.processText(text)
                     @unknown default:
