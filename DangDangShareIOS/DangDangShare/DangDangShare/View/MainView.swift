@@ -269,7 +269,6 @@ struct MainView: View {
                         .font(.system(size: 8, weight: .medium))
                         .foregroundColor(.white.opacity(0.4)).frame(width: 28, alignment: .trailing)
                 }
-                .onChange(of: item.1) { newValue in applyDebugSettings() }
             }
         }
     }
