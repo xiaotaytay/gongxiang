@@ -379,7 +379,14 @@ struct GlassCard<Content: View>: View {
     var body: some View {
         content()
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 12).fill(UltraThinMaterial()).overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.white.opacity(0.12), lineWidth: 0.5)))
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.black.opacity(0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(Color.white.opacity(0.12), lineWidth: 0.5)
+                    )
+            )
     }
 }
 
