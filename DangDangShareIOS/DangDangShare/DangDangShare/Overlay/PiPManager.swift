@@ -19,6 +19,7 @@ class PiPManager: NSObject {
     private var displayLink: CADisplayLink?
     private var radarView: RadarOverlayView?
     private var isPiPActive = false
+    private var isRendering = false
     private var silentPlayer: AVAudioPlayer?
     private var frameCount: Int64 = 0
     private var lastGameData: String = ""
@@ -161,13 +162,14 @@ class PiPManager: NSObject {
             setupPiPController()
         }
     }
+    
     func updateGameData(_ d: String) { lastGameData = d }
     func setLocked(_ locked: Bool) { isLocked = locked }
     func getLocked() -> Bool { return isLocked }
     
-    func startPiP() {
-        guard let pc = pipController, !isPiPActive else { return }
-        startSilentAudio()
+    func startRendering() {
+        guard !isRendering else { return }
+        isRendering = true
         sendInitialFrame()
         displayLink = CADisplayLink(target: self, selector: #selector(renderFrame))
         if #available(iOS 15.0, *) {
@@ -176,18 +178,36 @@ class PiPManager: NSObject {
             displayLink?.preferredFramesPerSecond = 60
         }
         displayLink?.add(to: .main, forMode: .common)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            if pc.isPictureInPicturePossible { pc.startPictureInPicture() }
+    }
+    
+    func stopRendering() {
+        isRendering = false
+        displayLink?.invalidate()
+        displayLink = nil
+        stopSilentAudio()
+        if isPiPActive {
+            pipController?.stopPictureInPicture()
+        }
+    }
+    
+    func startPiP() {
+        guard let pc = pipController, !isPiPActive else { return }
+        startSilentAudio()
+        if !isRendering {
+            startRendering()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if pc.isPictureInPicturePossible {
+                pc.startPictureInPicture()
+            }
         }
     }
     
     func stopPiP() {
-        displayLink?.invalidate(); displayLink = nil
-        if isPiPActive { pipController?.stopPictureInPicture() }
+        if isPiPActive {
+            pipController?.stopPictureInPicture()
+        }
         stopSilentAudio()
-    }
-    
-    func moveButtonFromPiP() {
     }
     
     private func sendInitialFrame() {
