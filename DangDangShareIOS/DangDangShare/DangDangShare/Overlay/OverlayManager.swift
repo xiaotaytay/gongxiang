@@ -27,45 +27,45 @@ class OverlayManager {
         
         let container = PassthroughView(frame: ws.screen.bounds)
         container.backgroundColor = .clear
-        container.isUserInteractionEnabled = true
+        container.isUserInteractionEnabled = false
         passthroughWindow.rootViewController = PassthroughViewController()
         passthroughWindow.rootViewController?.view = container
         passthroughWindow.rootViewController?.view.backgroundColor = .clear
         
         let radar = RadarOverlayView(frame: ws.screen.bounds)
         radar.isUserInteractionEnabled = false
+        radar.visible = false
         container.addSubview(radar)
         radarView = radar
         
         PiPManager.shared.updateRadarView(radar)
         PiPManager.shared.setup()
-        PiPManager.shared.startPiP()
     }
     
     @MainActor
     func hideOverlay() {
+        PiPManager.shared.stopPiP()
         radarView?.removeFromSuperview()
         overlayWindow?.isHidden = true
         overlayWindow = nil
         radarView = nil
         isInBackground = false
         PiPManager.shared.updateRadarView(nil)
-        PiPManager.shared.stopPiP()
     }
     
     @MainActor
     func enterBackground() {
         guard overlayWindow != nil else { return }
         isInBackground = true
-        radarView?.isHidden = true
         overlayWindow?.isHidden = true
+        PiPManager.shared.startPiP()
     }
     
     @MainActor
     func enterForeground() {
         guard overlayWindow != nil else { return }
         isInBackground = false
-        radarView?.isHidden = false
+        PiPManager.shared.stopPiP()
         overlayWindow?.isHidden = false
         overlayWindow?.makeKey()
     }
@@ -73,7 +73,6 @@ class OverlayManager {
     @MainActor
     func updateGameData(_ data: String) {
         radarView?.gameDataString = data
-        radarView?.setNeedsDisplay()
         PiPManager.shared.updateGameData(data)
     }
 }
