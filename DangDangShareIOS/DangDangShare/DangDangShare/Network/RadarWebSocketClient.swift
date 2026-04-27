@@ -350,23 +350,23 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     
     private func buildHeroStateMap(_ payload: String) -> [Int32: HeroState] {
         var map: [Int32: HeroState] = [:]
-        let parts = payload.split(separator: "---", maxSplits: 1)
-        guard parts.count >= 1 else { return map }
-        let heroes = parts[0].split(separator: "==")
+        let parts = payload.components(separatedBy: "---")
+        guard !parts.isEmpty else { return map }
+        let heroes = parts[0].components(separatedBy: "==")
         for (i, heroStr) in heroes.enumerated() {
-            let fields = heroStr.split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+            let fields = heroStr.components(separatedBy: ",")
             guard fields.count >= 7, let heroId = Int32(fields[0]) else { continue }
             let x = Float(fields[5]) ?? 0
             let y = Float(fields[6]) ?? 0
-            map[heroId] = HeroState(raw: String(heroStr), fields: fields, x: x, y: y, index: i)
+            map[heroId] = HeroState(raw: heroStr, fields: fields, x: x, y: y, index: i)
         }
         return map
     }
     
     private func reconstructPayload() -> String {
         guard let current = currentGameData else { return "" }
-        let parts = current.split(separator: "---", maxSplits: 1)
-        guard parts.count >= 1 else { return current }
+        let parts = current.components(separatedBy: "---")
+        guard !parts.isEmpty else { return current }
         
         var maxIndex = 0
         for (_, hero) in heroStateMap { if hero.index > maxIndex { maxIndex = hero.index } }
