@@ -266,10 +266,10 @@ struct MainView: View {
                     Text(item.0).font(.system(size: 8)).foregroundColor(.white.opacity(0.5)).frame(width: 20, alignment: .leading)
                     Slider(value: item.1, in: item.2...item.3).accentColor(.blue)
                     Text(String(format: item.0.contains("缩") || item.0.contains("放") ? "%.1f" : "%.0f", item.1.wrappedValue))
-                        .font(.system(size: 8, design: .monospaced))
+                        .font(.system(size: 8, weight: .medium))
                         .foregroundColor(.white.opacity(0.4)).frame(width: 28, alignment: .trailing)
                 }
-                .onChange(of: item.1) { _ in applyDebugSettings() }
+                .onChange(of: item.1) { newValue in applyDebugSettings() }
             }
         }
     }
