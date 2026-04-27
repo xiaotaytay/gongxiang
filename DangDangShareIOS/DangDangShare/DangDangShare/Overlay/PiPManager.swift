@@ -43,7 +43,6 @@ class PiPManager: NSObject {
         setupPixelBufferPool()
         setupPipDisplayView()
         setupPiPController()
-        setupAppLifecycleObservers()
     }
     
     private func loadMapImage() {
@@ -156,18 +155,6 @@ class PiPManager: NSObject {
         pipController?.canStartPictureInPictureAutomaticallyFromInline = true
     }
     
-    private func setupAppLifecycleObservers() {
-        NotificationCenter.default.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appWillEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
-    }
-    
-    @objc private func appDidEnterBackground() {
-        if radarView != nil { startPiP() }
-    }
-    @objc private func appWillEnterForeground() {
-        if isPiPActive { stopPiP() }
-    }
-    
     func updateRadarView(_ v: RadarOverlayView?) {
         radarView = v
         if v != nil && pipController == nil {
@@ -183,7 +170,11 @@ class PiPManager: NSObject {
         startSilentAudio()
         sendInitialFrame()
         displayLink = CADisplayLink(target: self, selector: #selector(renderFrame))
-        displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 60)
+        if #available(iOS 15.0, *) {
+            displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 60)
+        } else {
+            displayLink?.preferredFramesPerSecond = 60
+        }
         displayLink?.add(to: .main, forMode: .common)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             if pc.isPictureInPicturePossible { pc.startPictureInPicture() }
