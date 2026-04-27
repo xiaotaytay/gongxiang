@@ -6,6 +6,12 @@ enum ConnectionState {
     case connected
 }
 
+enum ServerProtocol {
+    case unknown
+    case binary
+    case text
+}
+
 @MainActor
 class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     var onConnected: (() -> Void)?
@@ -30,6 +36,8 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     private var reconnectTimer: Timer?
     private var connectTimeoutTimer: Timer?
     private var lastHeartbeatTime: TimeInterval = 0
+    private var protocolType: ServerProtocol = .unknown
+    private var protocolDetectTimer: Timer?
     
     private var currentGameData: String?
     private var heroStateMap: [Int32: HeroState] = [:]
@@ -57,8 +65,25 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
         state = .connecting
         intentionalClose = false
         reconnectAttempts = 0
+        protocolType = .unknown
         
-        let url = URL(string: "ws://\(serverHost):\(serverPort)/ws2")!
+        connectWithProtocol(.binary)
+    }
+    
+    private func connectWithProtocol(_ proto: ServerProtocol) {
+        let path: String
+        switch proto {
+        case .binary, .unknown:
+            path = "/ws2"
+        case .text:
+            path = "/ws"
+        }
+        
+        guard let url = URL(string: "ws://\(serverHost):\(serverPort)\(path)") else {
+            handleDisconnect("无效的服务器地址")
+            return
+        }
+        
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
         config.timeoutIntervalForResource = 30
@@ -66,10 +91,18 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
         urlSession = URLSession(configuration: config, delegate: self, delegateQueue: nil)
         webSocketTask = urlSession?.webSocketTask(with: url)
         webSocketTask?.resume()
-        connectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: false) { [weak self] _ in
+        
+        connectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 if self?.state == .connecting {
-                    self?.handleDisconnect("连接超时，请检查服务器地址和端口")
+                    if proto == .binary {
+                        self?.webSocketTask?.cancel(with: .normalClosure, reason: nil)
+                        self?.webSocketTask = nil
+                        self?.urlSession?.invalidateAndCancel()
+                        self?.connectWithProtocol(.text)
+                    } else {
+                        self?.handleDisconnect("连接超时，请检查服务器地址和端口")
+                    }
                 }
             }
         }
@@ -86,6 +119,7 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
         subscribed = false
         currentGameData = nil
         heroStateMap = [:]
+        protocolType = .unknown
     }
     
     func setRoomId(_ roomId: String?) {
@@ -100,18 +134,46 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     private func subscribeToRoom() {
         guard let roomId = roomId, !roomId.isEmpty, !subscribed else { return }
         subscribed = true
-        let frame = BinaryFrame.createViewerRegister(clientId: viewerId, targetClientId: roomId)
-        sendFrame(frame)
+        
+        switch protocolType {
+        case .binary:
+            let frame = BinaryFrame.createViewerRegister(clientId: viewerId, targetClientId: roomId)
+            sendFrame(frame)
+        case .text:
+            let msg = "\(viewerId)[==]\(roomId)"
+            sendText(msg)
+        case .unknown:
+            break
+        }
     }
     
     private func requestRoomList() {
-        sendFrame(BinaryFrame.createGetHome())
+        switch protocolType {
+        case .binary:
+            sendFrame(BinaryFrame.createGetHome())
+        case .text:
+            sendText("getHome")
+        case .unknown:
+            sendFrame(BinaryFrame.createGetHome())
+            sendText("getHome")
+        }
     }
     
     private func sendFrame(_ frame: BinaryFrame) {
-        guard let task = webSocketTask, state == .connected else { return }
+        guard let task = webSocketTask, state == .connected || state == .connecting else { return }
         let data = frame.encode()
         task.send(.data(data)) { [weak self] error in
+            if let error = error {
+                Task { @MainActor in
+                    self?.handleDisconnect("发送失败: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    private func sendText(_ text: String) {
+        guard let task = webSocketTask, state == .connected || state == .connecting else { return }
+        task.send(.string(text)) { [weak self] error in
             if let error = error {
                 Task { @MainActor in
                     self?.handleDisconnect("发送失败: \(error.localizedDescription)")
@@ -125,7 +187,7 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
         heartbeatTimer = Timer.scheduledTimer(withTimeInterval: ProtocolConstants.heartbeatIntervalMs, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             Task { @MainActor in
-                if self.state == .connected {
+                if self.state == .connected && self.protocolType == .binary {
                     self.lastHeartbeatTime = Date().timeIntervalSince1970 * 1000
                     self.sendFrame(BinaryFrame.createHeartbeat())
                 }
@@ -135,7 +197,16 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
     
     private func stopHeartbeat() { heartbeatTimer?.invalidate(); heartbeatTimer = nil }
     private func stopRoomRefresh() { roomRefreshTimer?.invalidate(); roomRefreshTimer = nil }
-    private func stopTimers() { stopHeartbeat(); stopRoomRefresh(); reconnectTimer?.invalidate(); reconnectTimer = nil; connectTimeoutTimer?.invalidate(); connectTimeoutTimer = nil }
+    private func stopProtocolDetectTimer() { protocolDetectTimer?.invalidate(); protocolDetectTimer = nil }
+    private func stopTimers() {
+        stopHeartbeat()
+        stopRoomRefresh()
+        stopProtocolDetectTimer()
+        reconnectTimer?.invalidate()
+        reconnectTimer = nil
+        connectTimeoutTimer?.invalidate()
+        connectTimeoutTimer = nil
+    }
     
     private func startRoomRefresh() {
         stopRoomRefresh()
@@ -153,14 +224,24 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
             self.connectTimeoutTimer = nil
             self.state = .connected
             self.reconnectAttempts = 0
-            self.onConnected?()
+            
             self.requestRoomList()
             self.startHeartbeat()
             self.startRoomRefresh()
+            
             if let roomId = self.roomId, !roomId.isEmpty {
                 self.subscribeToRoom()
             }
             self.receiveMessages()
+            
+            self.protocolDetectTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
+                Task { @MainActor in
+                    if self?.protocolType == .unknown {
+                        self?.protocolType = .text
+                        self?.onConnected?()
+                    }
+                }
+            }
         }
     }
     
@@ -179,9 +260,19 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
                 case .success(let message):
                     switch message {
                     case .data(let data):
+                        if self.protocolType == .unknown {
+                            self.protocolType = .binary
+                            self.stopProtocolDetectTimer()
+                            self.onConnected?()
+                        }
                         self.processData(data)
-                    case .string:
-                        break
+                    case .string(let text):
+                        if self.protocolType == .unknown {
+                            self.protocolType = .text
+                            self.stopProtocolDetectTimer()
+                            self.onConnected?()
+                        }
+                        self.processText(text)
                     @unknown default:
                         break
                     }
@@ -218,6 +309,17 @@ class RadarWebSocketClient: NSObject, URLSessionWebSocketDelegate {
             default:
                 break
             }
+        }
+    }
+    
+    private func processText(_ text: String) {
+        if text.hasPrefix("homeData##") {
+            let roomListStr = String(text.dropFirst("homeData##".count))
+            let cleaned = roomListStr.hasPrefix(",") ? String(roomListStr.dropFirst()) : roomListStr
+            onHomeData?(cleaned)
+        } else if text.hasPrefix("gameData##") {
+            let gameData = String(text.dropFirst("gameData##".count))
+            handleFullGameData(gameData)
         }
     }
     
